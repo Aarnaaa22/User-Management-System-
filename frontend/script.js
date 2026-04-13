@@ -7,7 +7,7 @@
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 // ✅ Correct
-const API_URL = "https://user-management-system-backend-hozd.onrender.com";
+const API_URL = "https://user-management-system-backend-hozd.onrender.com/api/users";
 
 
 // ─── State ────────────────────────────────────────────────────────────────────
