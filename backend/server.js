@@ -15,8 +15,9 @@ const app = express();
 // ─── Global Middleware ────────────────────────────────────────────────────────
 
 // Allow requests from the frontend (all origins in dev; restrict in production)
-app.use(cors());
-
+app.use(cors({
+  origin: "https://user-management-system-blush-mu.vercel.app"
+}));
 // Parse incoming JSON request bodies
 app.use(express.json());
 
