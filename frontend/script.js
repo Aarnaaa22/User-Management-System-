@@ -6,7 +6,8 @@
  */
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-const API_BASE = "http://localhost:5000/https://user-management-system-backend-hozd.onrender.com
+// ✅ Correct
+const API_URL = "https://user-management-system-backend-hozd.onrender.com";
 
 
 // ─── State ────────────────────────────────────────────────────────────────────
