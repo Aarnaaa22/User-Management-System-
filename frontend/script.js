@@ -6,9 +6,15 @@
  */
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-// ✅ Correct
-const API_URL = "https://user-management-system-backend-hozd.onrender.com/api/users";
+// Automatically use the correct backend URL based on the environment
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+// ⚠️ IMPORTANT: Replace this with your actual Render backend URL
+const PROD_BACKEND_URL = "https://user-management-system-backend-hozd.onrender.com"; 
+
+const API_BASE = isLocal 
+  ? "http://localhost:5000/api/users" 
+  : `${PROD_BACKEND_URL}/api/users`;
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let state = {
