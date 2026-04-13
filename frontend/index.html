@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UserBase — User Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts: Syne (display) + DM Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body>
+
+  <!-- ─── Header ─────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">UserBase</span>
+      </div>
+      <div class="header-stats">
+        <div class="stat-pill" id="totalCount">
+          <span class="stat-number">—</span>
+          <span class="stat-label">total users</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── Main Layout ────────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- Left Panel: Create + Search -->
+    <aside class="sidebar">
+
+      <!-- Create User Form -->
+      <section class="panel" id="createPanel">
+        <div class="panel-header">
+          <h2 class="panel-title">Add User</h2>
+          <span class="panel-badge">NEW</span>
+        </div>
+
+        <div class="form-group">
+          <label for="name">Name <span class="required">*</span></label>
+          <input type="text" id="name" placeholder="Jane Doe" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email <span class="required">*</span></label>
+          <input type="email" id="email" placeholder="jane@example.com" autocomplete="off" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" placeholder="25" min="0" max="120" />
+          </div>
+          <div class="form-group">
+            <label for="hobbies">Hobbies</label>
+            <input type="text" id="hobbies" placeholder="reading, chess" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea id="bio" rows="3" placeholder="A brief bio…"></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="createBtn">
+          <span class="btn-icon">+</span> Create User
+        </button>
+
+        <div class="form-message" id="formMessage"></div>
+      </section>
+
+      <!-- Search Panel -->
+      <section class="panel" id="searchPanel">
+        <div class="panel-header">
+          <h2 class="panel-title">Search Bio</h2>
+          <span class="panel-badge search-badge">TEXT</span>
+        </div>
+        <p class="panel-hint">Uses MongoDB full-text index on the <code>bio</code> field.</p>
+        <div class="search-row">
+          <input type="text" id="searchQuery" placeholder="e.g. developer, artist…" />
+          <button class="btn btn-search" id="searchBtn">Search</button>
+        </div>
+        <button class="btn btn-ghost" id="clearSearchBtn">Clear — show all</button>
+      </section>
+
+      <!-- Filter Panel -->
+      <section class="panel" id="filterPanel">
+        <div class="panel-header">
+          <h2 class="panel-title">Filter by Age</h2>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="minAge">Min Age</label>
+            <input type="number" id="minAge" placeholder="0" min="0" />
+          </div>
+          <div class="form-group">
+            <label for="maxAge">Max Age</label>
+            <input type="number" id="maxAge" placeholder="120" max="120" />
+          </div>
+        </div>
+        <button class="btn btn-primary" id="filterBtn">Apply Filter</button>
+      </section>
+
+    </aside>
+
+    <!-- Right Panel: User Cards -->
+    <section class="content">
+
+      <div class="content-toolbar">
+        <h2 class="content-title" id="contentTitle">All Users</h2>
+        <div class="toolbar-right">
+          <select class="sort-select" id="sortSelect">
+            <option value="-createdAt">Newest first</option>
+            <option value="createdAt">Oldest first</option>
+            <option value="name">Name A→Z</option>
+            <option value="-name">Name Z→A</option>
+            <option value="age">Age ↑</option>
+            <option value="-age">Age ↓</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <p>Fetching users…</p>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state hidden" id="emptyState">
+        <div class="empty-icon">◎</div>
+        <p>No users found.</p>
+        <span>Try a different search or create one above.</span>
+      </div>
+
+      <!-- User grid -->
+      <div class="user-grid" id="userGrid"></div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination"></div>
+
+    </section>
+  </main>
+
+  <!-- ─── Edit Modal ──────────────────────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal" id="editModal">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit User</h2>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+
+      <input type="hidden" id="editId" />
+
+      <div class="form-group">
+        <label for="editName">Name <span class="required">*</span></label>
+        <input type="text" id="editName" />
+      </div>
+      <div class="form-group">
+        <label for="editEmail">Email <span class="required">*</span></label>
+        <input type="email" id="editEmail" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editAge">Age</label>
+          <input type="number" id="editAge" min="0" max="120" />
+        </div>
+        <div class="form-group">
+          <label for="editHobbies">Hobbies</label>
+          <input type="text" id="editHobbies" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="editBio">Bio</label>
+        <textarea id="editBio" rows="3"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="cancelEditBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+      </div>
+      <div class="form-message" id="editMessage"></div>
+    </div>
+  </div>
+
+  <!-- ─── Toast Notification ─────────────────────────────────────────────── -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
