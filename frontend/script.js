@@ -40,6 +40,40 @@ const sortSelect  = $("sortSelect");
 
 // ─── Utility Helpers ──────────────────────────────────────────────────────────
 
+/**
+ * Robust fetch wrapper to handle Render cold-starts gracefully.
+ * Automatically retries the fetch and aborts on long timeouts.
+ */
+async function apiFetch(url, options = {}, retries = 2, timeoutMs = 15000) {
+  for (let i = 0; i <= retries; i++) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(id);
+      return res; // Success, return response
+    } catch (err) {
+      clearTimeout(id);
+      
+      const isTimeout = err.name === "AbortError";
+      
+      // If it's the last retry, throw the error
+      if (i === retries) {
+        throw new Error(isTimeout ? "Server took too long to respond. Please try again." : "Network Error: Could not connect to server.");
+      }
+
+      // Notify user on first retry
+      if (i === 0 && (isTimeout || err.name === "TypeError")) {
+         showToast("Waking up server, this may take up to 50 seconds...", "success");
+      }
+      
+      // Exponential backoff wait before retrying (e.g., 3s, then 6s)
+      await new Promise(res => setTimeout(res, 3000 * (i + 1)));
+    }
+  }
+}
+
 /** Show a toast notification */
 function showToast(message, type = "success") {
   const toast = $("toast");
@@ -207,7 +241,8 @@ async function fetchUsers() {
       maxAge: state.maxAge,
     });
 
-    const res = await fetch(url);
+    // Use our custom apiFetch to handle Render cold starts with timeout & retries
+    const res = await apiFetch(url);
     const data = await res.json();
 
     if (!data.success) throw new Error(data.message);
