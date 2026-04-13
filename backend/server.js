@@ -15,9 +15,28 @@ const app = express();
 // ─── Global Middleware ────────────────────────────────────────────────────────
 
 // Allow requests from the frontend (all origins in dev; restrict in production)
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5000",
+  // ⚠️ IMPORTANT: Add your Vercel deployment URL here:
+  "https://user-management-system-blush-mu.vercel.app" 
+];
+
 app.use(cors({
-  origin: "https://user-management-system-blush-mu.vercel.app"
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    // or requests from our allowed origins
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
 }));
+
 // Parse incoming JSON request bodies
 app.use(express.json());
 
